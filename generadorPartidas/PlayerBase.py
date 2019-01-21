@@ -1,5 +1,5 @@
-from generadorPartidas.EstadoPartida import CEstadoPartida
-#Clase base que define un jugador IA.
+# Clase base que define un jugador IA.
+
 
 class Cplayer:
     propietario = None
@@ -7,23 +7,26 @@ class Cplayer:
     def __init__(self, propietario):
         self.propietario = propietario
 
-    def seleccionarPais(self, estadoPartida):
-        return None
+    def set_models(self, model):
+        raise NotImplementedError
 
-    def reforzarPais(self, estadoPartida):
-        return None
+    def seleccionar_pais(self, estado_partida):
+        raise NotImplementedError
 
-    def test_cambio_cartas(self, ejercitoPorCambio, cambioObligatorio = False):
-        return [False, None]
+    def reforzar_pais(self, estado_partida):
+        raise NotImplementedError
 
-    #Seleccion del pais a atacar o None en el caso de que pasar ataques
-    def Ataque(self, estadoPartida):
-        return None
+    def test_cambio_cartas(self, ejercito_por_cambio, cambio_obligatorio=False):
+        raise NotImplementedError
+
+    # Seleccion del pais a atacar o None en el caso de que pasar ataques
+    def ataque(self, estado_partida):
+        raise NotImplementedError
 
     # Seleccion del nro de ejercitos para defender
-    def Defensa(estadoPartida, pais_atacante, nro_ejercitos_ataque, pais_atacado):
-        return None
+    def defensa(self, estado_partida, pais_atacante, nro_ejercitos_ataque, pais_atacado):
+        raise NotImplementedError
 
-    def MovimientoTropa(self, estadoPartida):
-        return None
+    def movimiento_tropa(self, estado_partida):
+        raise NotImplementedError
 

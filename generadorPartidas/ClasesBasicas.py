@@ -4,13 +4,14 @@ class CContinente:
         self.nombre = pnombre
         self.pais = list()
 
-class CPais:
-    #nombre
-    #vecino
-    #propietario
-    #nro_ejercitos
 
-    def __init__(self, pnombre , pvecino = list(), ppropietario = None, pnro_ejercitos = 0):
+class CPais:
+    # nombre
+    # vecino
+    # propietario
+    # nro_ejercitos
+
+    def __init__(self, pnombre, pvecino=list, ppropietario=None, pnro_ejercitos=0):
         self.nombre = pnombre
         self.vecino = pvecino
         self.propietario = ppropietario
@@ -21,4 +22,3 @@ class CPais:
 
     def __exit__(self, exception_type, exception_value, traceback):
         None
-

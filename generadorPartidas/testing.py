@@ -1,146 +1,233 @@
 import unittest
 import numpy.random as rd
 
-from ClasesBasicas import CPais, CContinente
-import Mapa
+from generadorPartidas import Mapa
+from generadorPartidas.ClasesBasicas import CPais, CContinente
+from generadorPartidas.PlayerAe import PlayerAe
 from generadorPartidas.arbitro import CArbitro
 from generadorPartidas.generadorLog import Clog
 from generadorPartidas.EstadoPartida import CEstadoPartida
 from generadorPartidas.RandomPlayer import CRandomPlayer
-
+from generadorPartidas.PlayerDe import PlayerDe
+from generadorPartidas.PlayerDd import PlayerDd
+from keras.models import load_model
 
 
 class CPaisTesting(unittest.TestCase):
 
     def test_nombre(self):
-        pais = CPais ("AustraliaOccidental")
-        self.assertEqual(pais.nombre, 'AustraliaOccidental')
+        country = CPais("AustraliaOccidental")
+        self.assertEqual(country.nombre, 'AustraliaOccidental')
+
 
 class CContinenteTesting(unittest.TestCase):
 
     def test_nombre(self):
-        continente = CContinente( "Australia")
-        self.assertEqual(continente.nombre, "Australia")
+        continent = CContinente("Australia")
+        self.assertEqual(continent.nombre, "Australia")
 
-class MapTestint(unittest.TestCase):
+
+class MapTestInt(unittest.TestCase):
 
     def testInicializaMapaStandar(self):
-        [paises, continentes] = Mapa.InicializaMapaStandar()
+        [paises, continentes] = Mapa.inicializa_mapa_standar()
 
-        self.assertEqual(len(paises)      , 4)
-        self.assertEqual(len(continentes) , 1)
+        self.assertEqual(len(paises), 4)
+        self.assertEqual(len(continentes), 1)
+
 
 class TestCRandomPlayer(unittest.TestCase):
     def testCRandomPlayer(self):
-        [paises, continentes] = Mapa.InicializaMapaStandar()
-        tstEstadoPartida = CEstadoPartida({1, 2, 3}, 0, paises, continentes, 0);
+        [paises, continentes] = Mapa.inicializa_mapa_standar()
+        tst_estado_partida = CEstadoPartida({1, 2, 3}, 0, paises, continentes, 0)
 
-        tstEstadoPartida.paises_l['0_0'].propietario = 1
-        tstEstadoPartida.paises_l['0_0'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['0_0'].propietario = 1
+        tst_estado_partida.paises_l['0_0'].nro_ejercitos = 1
 
-        tstEstadoPartida.paises_l['0_1'].propietario = 1
-        tstEstadoPartida.paises_l['0_1'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['0_1'].propietario = 1
+        tst_estado_partida.paises_l['0_1'].nro_ejercitos = 1
 
-        tstEstadoPartida.paises_l['1_0'].propietario = 2
-        tstEstadoPartida.paises_l['1_0'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['1_0'].propietario = 2
+        tst_estado_partida.paises_l['1_0'].nro_ejercitos = 1
 
-        tstEstadoPartida.paises_l['1_1'].propietario = 1
-        tstEstadoPartida.paises_l['1_1'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_estado_partida.paises_l['1_1'].nro_ejercitos = 1
 
-        tstPlayer =  CRandomPlayer(1)
+        tst_player = CRandomPlayer(1)
 
-        self.assertIsNone(tstPlayer.Ataque(tstEstadoPartida))
+        self.assertIsNone(tst_player.ataque(tst_estado_partida))
+
+        tst_estado_partida.paises_l['0_0'].propietario = 1
+        tst_estado_partida.paises_l['0_0'].nro_ejercitos = 2
+
+        tst_estado_partida.paises_l['0_1'].propietario = 1
+        tst_estado_partida.paises_l['0_1'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['1_0'].propietario = 2
+        tst_estado_partida.paises_l['1_0'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_estado_partida.paises_l['1_1'].nro_ejercitos = 1
+
+        tst_player = CRandomPlayer(1)
+
+        tst_player.ataque(tst_estado_partida)
 
 
-        tstEstadoPartida.paises_l['0_0'].propietario = 1
-        tstEstadoPartida.paises_l['0_0'].nro_ejercitos = 2
+class TestPlayerAe(unittest.TestCase):
+    def testPlayer_Ae(self):
+        [countries, continents] = Mapa.inicializa_mapa_standar()
+        tst_estado_partida = CEstadoPartida({1, 2, 3}, 0, countries, continents, 0)
 
-        tstEstadoPartida.paises_l['0_1'].propietario = 1
-        tstEstadoPartida.paises_l['0_1'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['0_0'].propietario = 1
+        tst_estado_partida.paises_l['0_0'].nro_ejercitos = 1
 
-        tstEstadoPartida.paises_l['1_0'].propietario = 2
-        tstEstadoPartida.paises_l['1_0'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['0_1'].propietario = 1
+        tst_estado_partida.paises_l['0_1'].nro_ejercitos = 1
 
-        tstEstadoPartida.paises_l['1_1'].propietario = 1
-        tstEstadoPartida.paises_l['1_1'].nro_ejercitos = 1
+        tst_estado_partida.paises_l['1_0'].propietario = 2
+        tst_estado_partida.paises_l['1_0'].nro_ejercitos = 1
 
-        tstPlayer = CRandomPlayer(1)
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_estado_partida.paises_l['1_1'].nro_ejercitos = 1
 
-        result = tstPlayer.Ataque(tstEstadoPartida)
+        tst_player = PlayerAe(1)
 
-        if (result is not None):
-            result = result
+        self.assertIsNone(tst_player.ataque(tst_estado_partida))
+
+        tst_estado_partida.paises_l['0_0'].propietario = 2
+        tst_estado_partida.paises_l['0_0'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['0_1'].propietario = 1
+        tst_estado_partida.paises_l['0_1'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['1_0'].propietario = 1
+        tst_estado_partida.paises_l['1_0'].nro_ejercitos = 2
+
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_estado_partida.paises_l['1_1'].nro_ejercitos = 1
+
+        tst_player = PlayerAe(1)
+
+        self.assertIsNone(tst_player.ataque(tst_estado_partida))
+
+        tst_estado_partida.paises_l['0_0'].propietario = 2
+        tst_estado_partida.paises_l['0_0'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['0_1'].propietario = 1
+        tst_estado_partida.paises_l['0_1'].nro_ejercitos = 1
+
+        tst_estado_partida.paises_l['1_0'].propietario = 1
+        tst_estado_partida.paises_l['1_0'].nro_ejercitos = 2
+
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_estado_partida.paises_l['1_1'].nro_ejercitos = 3
+
+        tst_player = PlayerAe(1)
+
+        self.assertIsNotNone(tst_player.ataque(tst_estado_partida))
 
 
 class TestCArbitro(unittest.TestCase):
 
     def testCArbitro(self):
-
         rd.seed(3)
 
-        arbitro = CArbitro()
+        arbitro = CArbitro(jugadores=3, max_turnos=1000., player_class=[CRandomPlayer, CRandomPlayer, CRandomPlayer])
 
-        result = arbitro.play(0)
-
+        arbitro.play(0)
 
     def testCArbitroyLog(self):
         arbitro = CArbitro()
 
-        tstLog = Clog( "../../datos/unittest/ini_partida2.csv",
+        tst_log = Clog("../../datos/unittest/ini_partida2.csv",
                        "../../datos/unittest/refuerzo_partida2.csv",
                        "../../datos/unittest/batalla_partida2.csv",
                        "../../datos/unittest/movimiento_ejercitos2.csv")
 
         rd.seed(1)
 
-        arbitro.setLog(tstLog)
-        ganador = arbitro.play(0)
-        self.assertTrue(tstLog.flush(1))
+        arbitro.set_log(tst_log)
+        arbitro.play(0)
+        self.assertTrue(tst_log.flush(1))
 
     def testCArbitroMultiplePartidas(self):
-        #Comprobamos la creación de 100 partidas
+        # Comprobamos la creación de 100 partidas
         arbitro = CArbitro()
 
-        tstLog = Clog("../../datos/unittest/ini_partida3.csv",
-                      "../../datos/unittest/refuerzo_partida3.csv",
-                      "../../datos/unittest/batalla_partida3.csv",
-                      "../../datos/unittest/movimiento_ejercitos3.csv")
+        tst_log = Clog("../../datos/unittest/ini_partida3.csv",
+                       "../../datos/unittest/refuerzo_partida3.csv",
+                       "../../datos/unittest/batalla_partida3.csv",
+                       "../../datos/unittest/movimiento_ejercitos3.csv")
 
         rd.seed(1)
 
-        arbitro.setLog(tstLog)
+        arbitro.set_log(tst_log)
 
         for partida in range(0, 10):
-            print ("partida:" + str(partida))
-            ganador = arbitro.play(partida)
-        self.assertTrue(tstLog.flush(1))
+            arbitro.play(partida)
+            self.assertTrue(tst_log.flush(1))
 
+    def testCArbitroAleatorioVsPlayerDe(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDe])
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerDe]:" + str(total_ganadas))
+
+    def testCArbitroAleatorioVsPlayerDd(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        model = load_model("../../datos/model_keras")
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDd],
+                           atack_models=[None, None, model])
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerDd]:" + str(total_ganadas))
 
 
 class TestClog(unittest.TestCase):
 
-     def testClog(self):
-         tstLog = Clog( "../../datos/unittest/ini_partida.csv",
-                        "../../datos/unittest/refuerzo_partida.csv",
-                        "../../datos/unittest/batalla_partida.csv",
-                        "../../datos/unittest/movimiento_ejercitos.csv")
+    def testClog(self):
+        tst_log = Clog("../../datos/unittest/ini_partida.csv",
+                       "../../datos/unittest/refuerzo_partida.csv",
+                       "../../datos/unittest/batalla_partida.csv",
+                       "../../datos/unittest/movimiento_ejercitos.csv")
 
-         [paises, continentes] = Mapa.InicializaMapaStandar()
-         tstEstadoPartida = CEstadoPartida({1,2,3} ,  0, paises, continentes);
+        [paises, continentes] = Mapa.inicializa_mapa_standar()
+        tst_estado_partida = CEstadoPartida({1, 2, 3}, 0, paises, continentes)
 
-         tstEstadoPartida.paises_l['0_0'].propietario = 1
-         tstLog.addInicializacion(tstEstadoPartida, 1, '0_0')
+        tst_estado_partida.paises_l['0_0'].propietario = 1
+        tst_log.add_inicializacion(tst_estado_partida, 1, '0_0')
 
-         tstEstadoPartida.paises_l['0_1'].propietario = 2
-         tstLog.addInicializacion(tstEstadoPartida, 2, '0_1')
+        tst_estado_partida.paises_l['0_1'].propietario = 2
+        tst_log.add_inicializacion(tst_estado_partida, 2, '0_1')
 
-         tstEstadoPartida.paises_l['1_0'].propietario = 0
-         tstLog.addInicializacion(tstEstadoPartida, 0, '1_0')
+        tst_estado_partida.paises_l['1_0'].propietario = 0
+        tst_log.add_inicializacion(tst_estado_partida, 0, '1_0')
 
-         tstEstadoPartida.paises_l['1_1'].propietario = 1
-         tstLog.addInicializacion(tstEstadoPartida, 1, '1_1')
+        tst_estado_partida.paises_l['1_1'].propietario = 1
+        tst_log.add_inicializacion(tst_estado_partida, 1, '1_1')
 
-         self.assertTrue(tstLog.flush(2))
+        self.assertTrue(tst_log.flush(2))
 
 
 if __name__ == '__main__':

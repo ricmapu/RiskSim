@@ -1,14 +1,15 @@
-import generadorPartidas.Mapa as mapa
+import generadorPartidas.Mapa as Mapa
 from generadorPartidas.RandomPlayer import CRandomPlayer
 from generadorPartidas.EstadoPartida import CEstadoPartida
 import numpy.random as rd
 from generadorPartidas.generadorLog import Clog
 from numpy import sort
-from copy import deepcopy
+from copy import deepcopy, copy
 
 
 class CArbitro:
-    def __init__(self, jugadores = 3, max_turnos = 1000. ):
+    def __init__(self, jugadores=3, max_turnos=1000., player_class=[CRandomPlayer, CRandomPlayer, CRandomPlayer],
+                 atack_models=[None, None, None]):
 
         self.paises = {}
         self.continentes = {}
@@ -17,118 +18,118 @@ class CArbitro:
         self.max_turnos = 0
         self.log = Clog()
 
-        [self.paises, self.continentes] = mapa.InicializaMapaStandar()
+        [self.paises, self.continentes] = Mapa.inicializa_mapa_standar()
         self.num_jugadores = jugadores
 
-        #Cargamos el tipo de jugador base
+        # Cargamos el tipo de jugador base
         for jug in range(self.num_jugadores):
-            self.jugadores[jug] = CRandomPlayer(jug)
+            self.jugadores[jug] = player_class[jug](jug)
+            self.jugadores[jug].set_models(atack_models[jug])
 
         self.max_turnos = max_turnos
 
-
-    def setLog(self, logObject):
-        self.log = logObject
+    def set_log(self, log_object):
+        self.log = log_object
 
     def play(self, id_partida):
-        partida = self.__InicializarTablero(id_partida)
+        partida = self.__inicializar_tablero(id_partida)
 
-        partidaGanada = False
-        jugadorGanador = None
+        partida_ganada = False
+        jugador_ganador = None
         turno = 0
-        while (not partidaGanada) and (turno < self.max_turnos):
+        while (not partida_ganada) and (turno < self.max_turnos):
             turno += 1
-            #for player in range(0, self.num_jugadores):
-                #CambioCartas(player)
-                # #partida = TurnoNuevosEjercitos(player, partida)
+            # for player in range(0, self.num_jugadores):
+            # CambioCartas(player)
+            # #partida = TurnoNuevosEjercitos(player, partida)
 
-            for player in range (0, self.num_jugadores):
-                self.__TurnoAtaque(player, partida)
-                #Comprobamos si el jugador ha ganado el turno
+            for player in range(0, self.num_jugadores):
+                self.__turno_ataque(player, partida)
+                # Comprobamos si el jugador ha ganado el turno
                 if partida.esGanador(player):
-                    partidaGanada = True
-                    jugadorGanador = player
+                    partida_ganada = True
+                    jugador_ganador = player
                     break
 
-                partida = self.__TurnoRecolocarEjercitos(player, partida)
+                partida = self.__turno_recolocar_ejercitos(player, partida)
 
-        if partidaGanada:
-            return jugadorGanador
+        if partida_ganada:
+            return jugador_ganador
         else:
             return None
 
-    #Fase 0- Se inicializa el tablero y se rellenan como vacios
-    def __InicializarTablero(self, id_partida):
-        partida = CEstadoPartida(deepcopy(self.jugadores) ,  0,
+    # Fase 0- Se inicializa el tablero y se rellenan como vacios
+    def __inicializar_tablero(self, id_partida):
+        partida = CEstadoPartida(deepcopy(self.jugadores), 0,
                                  deepcopy(self.paises),
                                  deepcopy(self.continentes), id_partida)
 
-        #Asignación incial de paises
-        #Seleccionamos el primer jugador
-        keyList = list(partida.jugadores_l.keys())
-        rd.shuffle(keyList)
-        currentPlayer = 0
-        for TurnoInicio in range(0,len(partida.paises_l)):
-            pais = partida.jugadores_l[keyList[currentPlayer]].seleccionarPais(estadoPartida=partida)
-            assert partida.paises_l[pais].propietario is None, "Pais "+ pais +" ya seleccionado"
+        # Asignación incial de paises
+        # Seleccionamos el primer jugador
+        key_list = list(partida.jugadores_l.keys())
+        rd.shuffle(key_list)
+        current_player = 0
+        for TurnoInicio in range(0, len(partida.paises_l)):
+            pais = partida.jugadores_l[key_list[current_player]].seleccionar_pais(estado_partida=partida)
+            assert partida.paises_l[pais].propietario is None, "Pais " + pais + " ya seleccionado"
 
-            #registramos la seleccion partida, jugadorTurno, pais_seleccionado
-            self.log.addInicializacion(partida = partida, jugadorTurno= currentPlayer,
-                                       pais_seleccionado = pais)
+            # registramos la seleccion partida, jugadorTurno, pais_seleccionado
+            self.log.add_inicializacion(partida=partida, jugador_turno=current_player,
+                                        pais_seleccionado=pais)
 
             with partida.paises_l[pais] as p:
-                p.propietario =  keyList[currentPlayer]
+                p.propietario = key_list[current_player]
                 p.nro_ejercitos = 1
 
-            currentPlayer = (currentPlayer + 1) % len(keyList)
+            current_player = (current_player + 1) % len(key_list)
 
-        #Asignacion de ejercitos
-        numEjercitos = 12
+        # Asignacion de ejercitos
+        num_ejercitos = 12
 
-        for TurnoAsignacion in range (0, numEjercitos):
-            for currentPlayer in range (0, len(keyList)):
-                pais = partida.jugadores_l[currentPlayer].reforzarPais(partida)
-                assert partida.paises_l[pais].propietario == currentPlayer, "Pais equivocado"
+        for TurnoAsignacion in range(0, num_ejercitos):
+            for current_player in range(0, len(key_list)):
+                pais = partida.jugadores_l[current_player].reforzar_pais(partida)
+                assert partida.paises_l[pais].propietario == current_player, "Pais equivocado"
 
-                #registramos la seleccion partida, jugadorTurno, pais_seleccionado
-                self.log.addRefuerzo(partida = partida, jugadorTurno= currentPlayer,
-                                       pais_seleccionado = pais)
+                # registramos la seleccion partida, jugadorTurno, pais_seleccionado
+                self.log.add_refuerzo(partida=partida, jugador_turno=current_player,
+                                      pais_seleccionado=pais)
 
                 partida.paises_l[pais].nro_ejercitos += 1
 
         return partida
 
-
-    #Fase 1- Revisar si el jugador puede cambiar cartas
-    def __CambioCartas(self, player):
+    # Fase 1- Revisar si el jugador puede cambiar cartas
+    def __cambio_cartas(self, player):
 
         pass
 
-    #Fase 2
-    def __TurnoNuevosEjercitos(self, player):
+    # Fase 2
+    def __turno_nuevos_ejercitos(self, player):
         pass
 
-    #Fase 3.- REvisar Turno Ataque
+    # Fase 3.- REvisar Turno Ataque
 
-    def __TurnoAtaque(self, player, partida):
-        result = partida.jugadores_l[player].Ataque(partida)
+    def __turno_ataque(self, player, partida):
+        result = partida.jugadores_l[player].ataque(partida)
 
-        #Atacar hasta que el jugador se retire
-        while (result is not  None):
-            # TODO:Hacer codigo de comprobación de que la jugada es viable
-            #el ejercito ataca; obtenemos nro de defensores
+        # Atacar hasta que el jugador se retire
+        while result is not None:
+            # TODO:Hacer código de comprobación de que la jugada es viable
+            # el ejército ataca; obtenemos nro de defensores
             pais_atacante = result[0]
             pais_atacado = result[1]
             jugador_atacado = partida.paises_l[pais_atacado].propietario
             nro_ejercitos = result[2]
 
-            # registramo el ataque
-            self.log.addAtaque(partida = partida, jugadorTurno= player,
-                                       pais_atacante = pais_atacante,
-                                       pais_atacado = pais_atacado,
-                                       nro_ejercitos = nro_ejercitos)
+            # registramos el ataque
+            self.log.add_ataque(partida=partida, jugador_turno=player,
+                                pais_atacante=pais_atacante,
+                                pais_atacado=pais_atacado,
+                                nro_ejercitos=nro_ejercitos)
 
-            nro_defensores = partida.jugadores_l[jugador_atacado].Defensa(partida,pais_atacante, nro_ejercitos,pais_atacado )
+            nro_defensores = partida.jugadores_l[jugador_atacado].defensa(partida, pais_atacante, nro_ejercitos,
+                                                                          pais_atacado)
 
             [perdida_atacantes, perdida_defensores] = self.__simula_ataque(nro_ejercitos, nro_defensores)
 
@@ -138,24 +139,22 @@ class CArbitro:
             nro_ejercitos -= perdida_atacantes
 
             if partida.paises_l[pais_atacado].nro_ejercitos == 0:
-                #se pierde el pais y es conquistado
+                # se pierde el pais y es conquistado
                 partida.paises_l[pais_atacado].propietario = player
                 partida.paises_l[pais_atacado].nro_ejercitos = nro_ejercitos
             else:
-                #no se pierde, y los ejercitos atacantes vuelve al pais
+                # no se pierde, y los ejercitos atacantes vuelve al pais
                 partida.paises_l[pais_atacante].nro_ejercitos += nro_ejercitos
 
-            result = partida.jugadores_l[player].Ataque(partida)
+            result = partida.jugadores_l[player].ataque(partida)
 
+    # Fase 4 .- Recolocar Ejercitos
+    def __turno_recolocar_ejercitos(self, player, partida):
+        result = partida.jugadores_l[player].movimiento_tropa(partida)
 
-    #Fase 4 .- Recolocar Ejercitos
-    def __TurnoRecolocarEjercitos(self, player, partida):
-        result = partida.jugadores_l[player].MovimientoTropa(partida)
+        # Atacar hasta que el jugador se retire
 
-        #Atacar hasta que el jugador se retire
-
-        while (result is not  None):
-
+        while result is not None:
             [pais_origen, pais_destino, nro_ejercitos] = result
 
             # TODO:Hacer codigo de comprobación de que la jugada es viable
@@ -163,18 +162,18 @@ class CArbitro:
             assert partida.paises_l[pais_destino].propietario == player, "El pais destino no pertenece al jugador"
             assert partida.paises_l[pais_origen].nro_ejercitos > nro_ejercitos, "El pais origen no tiene ejercitos"
 
-            #Movemos la tropa indicada
-            partida.paises_l[pais_origen].nro_ejercitos  -= nro_ejercitos
+            # Movemos la tropa indicada
+            partida.paises_l[pais_origen].nro_ejercitos -= nro_ejercitos
             partida.paises_l[pais_destino].nro_ejercitos += nro_ejercitos
 
-            self.log.addMovimientoEjercitos(partida, player, pais_origen,
-                                           pais_destino, nro_ejercitos)
+            self.log.add_movimiento_ejercitos(partida, player, pais_origen,
+                                              pais_destino, nro_ejercitos)
 
-            result = partida.jugadores_l[player].MovimientoTropa(partida)
+            result = partida.jugadores_l[player].movimiento_tropa(partida)
         return partida
 
-
-    def __simula_ataque(self, nro_atacantes, nro_defensores):
+    @staticmethod
+    def __simula_ataque(nro_atacantes, nro_defensores):
         # simula un ataque entre atacantes y defensores
         # devuelve el nro de ejercitos derrotados
 
@@ -188,7 +187,7 @@ class CArbitro:
         perdida_defensores = 0
 
         for i in range(0, comparaciones):
-            if (tirada_defensor[i] >= tirada_atacante[i]):
+            if tirada_defensor[i] >= tirada_atacante[i]:
                 perdida_atacantes += 1
             else:
                 perdida_defensores += 1
