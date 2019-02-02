@@ -32,6 +32,9 @@ class CArbitro:
         self.log = log_object
 
     def play(self, id_partida):
+
+        self.log.start_partida()
+
         partida = self.__inicializar_tablero(id_partida)
 
         partida_ganada = False
@@ -39,6 +42,7 @@ class CArbitro:
         turno = 0
         while (not partida_ganada) and (turno < self.max_turnos):
             turno += 1
+            partida.nro_turno = turno
             # for player in range(0, self.num_jugadores):
             # CambioCartas(player)
             # #partida = TurnoNuevosEjercitos(player, partida)
@@ -54,8 +58,10 @@ class CArbitro:
                 partida = self.__turno_recolocar_ejercitos(player, partida)
 
         if partida_ganada:
+            self.log.end_partida(jugador_ganador)
             return jugador_ganador
         else:
+            self.log.end_partida(None)
             return None
 
     # Fase 0- Se inicializa el tablero y se rellenan como vacios
@@ -66,11 +72,11 @@ class CArbitro:
 
         # Asignación incial de paises
         # Seleccionamos el primer jugador
-        key_list = list(partida.jugadores_l.keys())
-        rd.shuffle(key_list)
+        # key_list = list(partida.jugadores_l.keys())
+        # rd.shuffle(key_list)
         current_player = 0
         for TurnoInicio in range(0, len(partida.paises_l)):
-            pais = partida.jugadores_l[key_list[current_player]].seleccionar_pais(estado_partida=partida)
+            pais = partida.jugadores_l[current_player].seleccionar_pais(estado_partida=partida)
             assert partida.paises_l[pais].propietario is None, "Pais " + pais + " ya seleccionado"
 
             # registramos la seleccion partida, jugadorTurno, pais_seleccionado
@@ -78,16 +84,16 @@ class CArbitro:
                                         pais_seleccionado=pais)
 
             with partida.paises_l[pais] as p:
-                p.propietario = key_list[current_player]
+                p.propietario = current_player
                 p.nro_ejercitos = 1
 
-            current_player = (current_player + 1) % len(key_list)
+            current_player = (current_player + 1) % 3
 
         # Asignacion de ejercitos
         num_ejercitos = 12
 
         for TurnoAsignacion in range(0, num_ejercitos):
-            for current_player in range(0, len(key_list)):
+            for current_player in range(0,3):
                 pais = partida.jugadores_l[current_player].reforzar_pais(partida)
                 assert partida.paises_l[pais].propietario == current_player, "Pais equivocado"
 
@@ -170,6 +176,9 @@ class CArbitro:
                                               pais_destino, nro_ejercitos)
 
             result = partida.jugadores_l[player].movimiento_tropa(partida)
+
+        # TODO:Incluir registro del la opción de pasar
+
         return partida
 
     @staticmethod

@@ -148,8 +148,8 @@ class TestCArbitro(unittest.TestCase):
         rd.seed(1)
 
         arbitro.set_log(tst_log)
-        arbitro.play(0)
-        self.assertTrue(tst_log.flush(1))
+        ganador = arbitro.play(0)
+        self.assertTrue(tst_log.flush())
 
     def testCArbitroMultiplePartidas(self):
         # Comprobamos la creación de 100 partidas
@@ -164,9 +164,11 @@ class TestCArbitro(unittest.TestCase):
 
         arbitro.set_log(tst_log)
 
-        for partida in range(0, 10):
+        for partida in range(0, 1000):
             arbitro.play(partida)
-            self.assertTrue(tst_log.flush(1))
+            print(partida)
+
+        self.assertTrue(tst_log.flush())
 
     def testCArbitroAleatorioVsPlayerDe(self):
         # Comprobamos la creación de 100 partidas
@@ -174,7 +176,7 @@ class TestCArbitro(unittest.TestCase):
 
         rd.seed(1)
         arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDe])
-        for partida in range(0, 100):
+        for partida in range(0, 10):
             jug_ganador = arbitro.play(partida)
             if jug_ganador is None:
                 jug_ganador = 0
@@ -193,7 +195,7 @@ class TestCArbitro(unittest.TestCase):
         rd.seed(1)
         arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDd],
                            atack_models=[None, None, model])
-        for partida in range(0, 100):
+        for partida in range(0, 10):
             jug_ganador = arbitro.play(partida)
             if jug_ganador is None:
                 jug_ganador = 0
@@ -227,7 +229,7 @@ class TestClog(unittest.TestCase):
         tst_estado_partida.paises_l['1_1'].propietario = 1
         tst_log.add_inicializacion(tst_estado_partida, 1, '1_1')
 
-        self.assertTrue(tst_log.flush(2))
+        self.assertTrue(tst_log.flush())
 
 
 if __name__ == '__main__':

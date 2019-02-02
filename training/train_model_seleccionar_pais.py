@@ -12,12 +12,15 @@ import matplotlib.pyplot as plt
 
 
 def load_data(filename):
-    xcols = (0, 1)
+    xcols = (2,3, 4, 5, 6, 7, 8, 9, 10)
+    ycols = (11)
     xdata = genfromtxt(filename, delimiter=';', skip_header=1, dtype=int,
                        usecols=xcols)
 
     ydata = genfromtxt(filename, delimiter=';', skip_header=1, dtype=int,
-                       usecols=2)
+                       usecols=ycols)
+
+    # Tratamiento del dato
 
     return [xdata, ydata]
 
@@ -58,9 +61,9 @@ def model1(xdata_train2, ydata_train2, xdata_eval2, ydata_eval2, verbose_param=1
 if __name__ == "__main__":
     verbose = 1
 
-    [xdata_train, ydata_train] = load_data('../../logs_partidas/risk_battle_train.csv')
-    [xdata_eval, ydata_eval] = load_data('../../logs_partidas/risk_battle_eval.csv')
-    [xdata_test, ydata_test] = load_data('../../logs_partidas/risk_battle_test.csv')
+    [xdata_train, ydata_train] = load_data('../../logs_partidas/risk_ini_partida_train.csv')
+    [xdata_eval, ydata_eval] = load_data('../../logs_partidas/risk_ini_partida_eval.csv')
+    [xdata_test, ydata_test] = load_data('../../logs_partidas/risk_ini_partida_test.csv')
 
     model = model1(xdata_train, ydata_train, xdata_eval, ydata_eval, verbose)
 
@@ -69,12 +72,5 @@ if __name__ == "__main__":
     print('Test loss:', loss_and_metrics[0])
     print('Test accuracy:', loss_and_metrics[1])
 
-    model.save("../../datos/modelos/estimacion_ataque_defensa.mod")
+    model.save("../../datos/modelos/estimacion_ini_partida.mod")
 
-#    classes = model3.predict(xdata2_test, batch_size=128)
-#    show_example (1, classes, ydata2_test, num_output)
-
-    x = np.array([[2, 1], [2, 2], [1, 1], [1, 2]])
-    result = model.predict(x)
-
-    print(result)
