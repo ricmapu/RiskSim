@@ -39,11 +39,11 @@ class Clog:
             self.FaseRefuerzo += self.FaseRefuerzo_tmp
 
             for n, i in enumerate(self.FaseAtaque_tmp):
-                self.FaseAtaque_tmp[n][3] = ganador
+                self.FaseAtaque_tmp[n][5] = ganador
             self.FaseAtaque += self.FaseAtaque_tmp
 
             for n, i in enumerate(self.FaseMovEjer_tmp):
-                self.FaseMovEjer_tmp[n][3] = ganador
+                self.FaseMovEjer_tmp[n][5] = ganador
             self.FaseMovEjer += self.FaseMovEjer_tmp
 
         if len(self.FaseInicializacion) > self.max_num_records or  \
@@ -60,11 +60,21 @@ class Clog:
     def add_refuerzo(self, partida, jugador_turno, pais_seleccionado):
         self.FaseRefuerzo_tmp.append([jugador_turno, deepcopy(partida), pais_seleccionado, None])
 
-    def add_ataque(self, partida, jugador_turno, pais_atacante, pais_atacado, nro_ejercitos):
-        self.FaseAtaque_tmp.append([jugador_turno, deepcopy(partida), pais_atacante, pais_atacado, nro_ejercitos, None])
+    def add_ataque(self, partida, jugador_turno, pais_atacante=None, pais_atacado=None,
+                   nro_ejercitos=None, pasar=False):
+        if pasar:
+            self.FaseAtaque_tmp.append([jugador_turno, deepcopy(partida), None, None, None, None])
+        else:
+            self.FaseAtaque_tmp.append([jugador_turno, deepcopy(partida), pais_atacante, pais_atacado, nro_ejercitos,
+                                        None])
 
-    def add_movimiento_ejercitos(self, partida, jugador_turno, pais_origen, pais_destino, nro_ejercitos):
-        self.FaseMovEjer_tmp.append([jugador_turno, deepcopy(partida), pais_origen, pais_destino, nro_ejercitos, None])
+    def add_movimiento_ejercitos(self, partida, jugador_turno, pais_origen=None, pais_destino=None, nro_ejercitos=None,
+                                 pasar=False):
+        if pasar:
+            self.FaseMovEjer_tmp.append([jugador_turno, deepcopy(partida), None, None, None, None])
+        else:
+            self.FaseMovEjer_tmp.append([jugador_turno, deepcopy(partida), pais_origen, pais_destino, nro_ejercitos,
+                                         None])
 
     def flush(self):
         if self.nombre_fich_refuerzo is not None:
@@ -111,11 +121,11 @@ class Clog:
                 row.append("partida")
                 row.append("turno")
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseInicializacion[0][1].paises_l.keys():
+                for i in sorted(self.FaseInicializacion[0][1].paises_l.keys()):
                     row.append("propietario_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseInicializacion[0][1].paises_l.keys():
+                for i in sorted(self.FaseInicializacion[0][1].paises_l.keys()):
                     row.append("seleccionar_" + i)
 
                 row.append("Jugador")
@@ -131,7 +141,7 @@ class Clog:
                 row.append(self.FaseInicializacion[i][1].nro_turno)
 
                 # Recorremos cada pais y marcamos el jugador propietario
-                for j in self.FaseInicializacion[i][1].paises_l.keys():
+                for j in sorted(self.FaseInicializacion[i][1].paises_l.keys()):
                     if self.FaseInicializacion[i][1].paises_l[j].propietario is None:
                         row.append('')
                     else:
@@ -139,7 +149,7 @@ class Clog:
 
                 # Recorremos cada pais y marcamos el pais seleccionado
                 pais_seleccionado = self.FaseInicializacion[i][2]
-                for j in self.FaseInicializacion[i][1].paises_l.keys():
+                for j in sorted(self.FaseInicializacion[i][1].paises_l.keys()):
                     if j == pais_seleccionado:
                         row.append(1)
                     else:
@@ -179,15 +189,15 @@ class Clog:
                 row.append("turno")
 
                 # Recorremos cada pais y marcamos jugador
-                for i in self.FaseRefuerzo[0][1].paises_l.keys():
+                for i in sorted(self.FaseRefuerzo[0][1].paises_l.keys()):
                     row.append(i)
 
                 # Recorremos cada pais y marcamos el nro de ejercitos
-                for i in self.FaseRefuerzo[0][1].paises_l.keys():
+                for i in sorted(self.FaseRefuerzo[0][1].paises_l.keys()):
                     row.append("ejercitos_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseRefuerzo[0][1].paises_l.keys():
+                for i in sorted(self.FaseRefuerzo[0][1].paises_l.keys()):
                     row.append("seleccionar_" + i)
 
                 row.append("Jugador")
@@ -203,19 +213,19 @@ class Clog:
                 row.append(self.FaseRefuerzo[i][1].nro_turno)
 
                 # Recorremos cada pais y marcamos el jugador propietario
-                for j in self.FaseRefuerzo[i][1].paises_l.keys():
+                for j in sorted(self.FaseRefuerzo[i][1].paises_l.keys()):
                     if self.FaseRefuerzo[i][1].paises_l[j].propietario is None:
                         row.append('')
                     else:
                         row.append(self.FaseRefuerzo[i][1].paises_l[j].propietario)
 
                 # Recorremos cada pais y marcamos el pais seleccionado
-                for j in self.FaseRefuerzo[i][1].paises_l.keys():
+                for j in sorted(self.FaseRefuerzo[i][1].paises_l.keys()):
                     row.append(self.FaseRefuerzo[i][1].paises_l[j].nro_ejercitos)
 
                 # Recorremos cada pais y marcamos el pais seleccionado
                 pais_atacante = self.FaseRefuerzo[i][2]
-                for j in self.FaseRefuerzo[i][1].paises_l.keys():
+                for j in sorted(self.FaseRefuerzo[i][1].paises_l.keys()):
                     if j == pais_atacante:
                         row.append(1)
                     else:
@@ -254,19 +264,19 @@ class Clog:
                 row.append("nro_turno")
 
                 # Recorremos cada pais y marcamos jugador
-                for i in self.FaseAtaque[0][1].paises_l.keys():
+                for i in sorted(self.FaseAtaque[0][1].paises_l.keys()):
                     row.append(i)
 
                 # Recorremos cada pais y marcamos el nro de ejercitos
-                for i in self.FaseAtaque[0][1].paises_l.keys():
+                for i in sorted(self.FaseAtaque[0][1].paises_l.keys()):
                     row.append("ejercitos_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseAtaque[0][1].paises_l.keys():
+                for i in sorted(self.FaseAtaque[0][1].paises_l.keys()):
                     row.append("atacante_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseAtaque[0][1].paises_l.keys():
+                for i in sorted(self.FaseAtaque[0][1].paises_l.keys()):
                     row.append("atacado_" + i)
 
                 row.append("Jugador")
@@ -282,19 +292,19 @@ class Clog:
                 row.append(self.FaseAtaque[i][1].nro_turno)
 
                 # Recorremos cada pais y marcamos el jugador propietario
-                for j in self.FaseAtaque[i][1].paises_l.keys():
+                for j in sorted(self.FaseAtaque[i][1].paises_l.keys()):
                     if self.FaseAtaque[i][1].paises_l[j].propietario is None:
                         row.append('')
                     else:
                         row.append(self.FaseAtaque[i][1].paises_l[j].propietario)
 
                 # Recorremos cada pais y ponemos el nro de ejercitos
-                for j in self.FaseAtaque[i][1].paises_l.keys():
+                for j in sorted(self.FaseAtaque[i][1].paises_l.keys()):
                     row.append(self.FaseAtaque[i][1].paises_l[j].nro_ejercitos)
 
                 # Recorremos cada pais y marcamos el pais atacante
                 pais_seleccionado = self.FaseAtaque[i][2]
-                for j in self.FaseAtaque[i][1].paises_l.keys():
+                for j in sorted(self.FaseAtaque[i][1].paises_l.keys()):
                     if j == pais_seleccionado:
                         row.append(1)
                     else:
@@ -302,7 +312,7 @@ class Clog:
 
                 # Recorremos cada pais y marcamos el pais atacado
                 pais_atacado = self.FaseAtaque[i][3]
-                for j in self.FaseAtaque[i][1].paises_l.keys():
+                for j in sorted(self.FaseAtaque[i][1].paises_l.keys()):
                     if j == pais_atacado:
                         row.append(1)
                     else:
@@ -311,7 +321,7 @@ class Clog:
                 row.append(self.FaseAtaque[i][0])
 
                 # Marcamos si es ganador o no
-                if self.FaseAtaque[i][3] == self.FaseAtaque[i][0]:
+                if self.FaseAtaque[i][5] == self.FaseAtaque[i][0]:
                     row.append(1)
                 else:
                     row.append(0)
@@ -341,19 +351,19 @@ class Clog:
                 row.append("turno")
 
                 # Recorremos cada pais y marcamos jugador
-                for i in self.FaseMovEjer[0][1].paises_l.keys():
+                for i in sorted(self.FaseMovEjer[0][1].paises_l.keys()):
                     row.append(i)
 
                 # Recorremos cada pais y marcamos el nro de ejercitos
-                for i in self.FaseMovEjer[0][1].paises_l.keys():
+                for i in sorted(self.FaseMovEjer[0][1].paises_l.keys()):
                     row.append("ejercitos_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseMovEjer[0][1].paises_l.keys():
+                for i in sorted(self.FaseMovEjer[0][1].paises_l.keys()):
                     row.append("origen_ejer_" + i)
 
                 # Recorremos cada pais y marcamos el jugador
-                for i in self.FaseMovEjer[0][1].paises_l.keys():
+                for i in sorted(self.FaseMovEjer[0][1].paises_l.keys()):
                     row.append("destino_ejer_" + i)
 
                 row.append("NroEjercitos")
@@ -370,19 +380,19 @@ class Clog:
                 row.append(self.FaseMovEjer[i][1].nro_turno)
 
                 # Recorremos cada pais y marcamos el jugador propietario
-                for j in self.FaseMovEjer[i][1].paises_l.keys():
+                for j in sorted(self.FaseMovEjer[i][1].paises_l.keys()):
                     if self.FaseMovEjer[i][1].paises_l[j].propietario is None:
                         row.append('')
                     else:
                         row.append(self.FaseMovEjer[i][1].paises_l[j].propietario)
 
                 # Recorremos cada pais y ponemos el nro de ejercitos
-                for j in self.FaseMovEjer[i][1].paises_l.keys():
+                for j in sorted(self.FaseMovEjer[i][1].paises_l.keys()):
                     row.append(self.FaseMovEjer[i][1].paises_l[j].nro_ejercitos)
 
                 # Recorremos cada pais y marcamos el pais origen
                 pais_origen = self.FaseMovEjer[i][2]
-                for j in self.FaseMovEjer[i][1].paises_l.keys():
+                for j in sorted(self.FaseMovEjer[i][1].paises_l.keys()):
                     if j == pais_origen:
                         row.append(1)
                     else:
@@ -390,7 +400,7 @@ class Clog:
 
                 # Recorremos cada pais y marcamos el pais destino
                 pais_destino = self.FaseMovEjer[i][3]
-                for j in self.FaseMovEjer[i][1].paises_l.keys():
+                for j in sorted(self.FaseMovEjer[i][1].paises_l.keys()):
                     if j == pais_destino:
                         row.append(1)
                     else:
@@ -403,7 +413,7 @@ class Clog:
                 row.append(str(self.FaseMovEjer[i][0]))
 
                 # Marcamos si es ganador o no
-                if self.FaseMovEjer[i][3] == self.FaseMovEjer[i][0]:
+                if self.FaseMovEjer[i][5] == self.FaseMovEjer[i][0]:
                     row.append(1)
                 else:
                     row.append(0)

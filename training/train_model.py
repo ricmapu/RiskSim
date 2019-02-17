@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 def load_data(filename):
     xcols = (0, 1)
-    xdata = genfromtxt(filename, delimiter=';', skip_header=1, dtype=int,
+    xdata = genfromtxt(filename, delimiter=',', skip_header=1, dtype=int,
                        usecols=xcols)
 
-    ydata = genfromtxt(filename, delimiter=';', skip_header=1, dtype=int,
+    ydata = genfromtxt(filename, delimiter=',', skip_header=1, dtype=int,
                        usecols=2)
 
     return [xdata, ydata]
@@ -58,9 +58,9 @@ def model1(xdata_train2, ydata_train2, xdata_eval2, ydata_eval2, verbose_param=1
 if __name__ == "__main__":
     verbose = 1
 
-    [xdata_train, ydata_train] = load_data('../../logs_partidas/risk_battle_train.csv')
-    [xdata_eval, ydata_eval] = load_data('../../logs_partidas/risk_battle_eval.csv')
-    [xdata_test, ydata_test] = load_data('../../logs_partidas/risk_battle_test.csv')
+    [xdata_train, ydata_train] = load_data('../../datos/logs_partidas/risk_battle_train.csv')
+    [xdata_eval, ydata_eval] = load_data('../../datos/logs_partidas/risk_battle_eval.csv')
+    [xdata_test, ydata_test] = load_data('../../datos/logs_partidas/risk_battle_test.csv')
 
     model = model1(xdata_train, ydata_train, xdata_eval, ydata_eval, verbose)
 

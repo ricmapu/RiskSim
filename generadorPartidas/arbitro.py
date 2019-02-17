@@ -4,7 +4,7 @@ from generadorPartidas.EstadoPartida import CEstadoPartida
 import numpy.random as rd
 from generadorPartidas.generadorLog import Clog
 from numpy import sort
-from copy import deepcopy, copy
+from copy import deepcopy
 
 
 class CArbitro:
@@ -93,7 +93,7 @@ class CArbitro:
         num_ejercitos = 12
 
         for TurnoAsignacion in range(0, num_ejercitos):
-            for current_player in range(0,3):
+            for current_player in range(0, 3):
                 pais = partida.jugadores_l[current_player].reforzar_pais(partida)
                 assert partida.paises_l[pais].propietario == current_player, "Pais equivocado"
 
@@ -117,10 +117,15 @@ class CArbitro:
     # Fase 3.- REvisar Turno Ataque
 
     def __turno_ataque(self, player, partida):
+
         result = partida.jugadores_l[player].ataque(partida)
 
+        if result is None:
+            # El jugador no puede atacar, se retira
+            return partida
+
         # Atacar hasta que el jugador se retire
-        while result is not None:
+        while result[0] is not None:
             # TODO:Hacer código de comprobación de que la jugada es viable
             # el ejército ataca; obtenemos nro de defensores
             pais_atacante = result[0]
@@ -153,31 +158,37 @@ class CArbitro:
                 partida.paises_l[pais_atacante].nro_ejercitos += nro_ejercitos
 
             result = partida.jugadores_l[player].ataque(partida)
+            if result is None:
+                self.log.add_ataque(partida=partida, jugador_turno=player, pasar=True)
+                # El jugador no puede atacar, pasa turno
+                return partida
+
+        # El jugador pasa y se registra
+        self.log.add_ataque(partida=partida, jugador_turno=player, pasar=True)
 
     # Fase 4 .- Recolocar Ejercitos
     def __turno_recolocar_ejercitos(self, player, partida):
+
         result = partida.jugadores_l[player].movimiento_tropa(partida)
+        if len(result) == 0 or result[0][0] is None:
+            # El jugador no puede mover, pasa turno
+            return partida
 
-        # Atacar hasta que el jugador se retire
+        # TODO:Adaptar el codigo a una lista de movimientos
+        for movimiento in result:
+            (pais_origen, pais_destino, nro_ejercitos) = movimiento
 
-        while result is not None:
-            [pais_origen, pais_destino, nro_ejercitos] = result
+            if pais_origen is not None:
+                assert partida.paises_l[pais_origen].propietario == player, "El pais origen no pertenece al jugador"
+                assert partida.paises_l[pais_destino].propietario == player, "El pais destino no pertenece al jugador"
+                assert partida.paises_l[pais_origen].nro_ejercitos > nro_ejercitos, "El pais origen no tiene ejercitos"
 
-            # TODO:Hacer codigo de comprobación de que la jugada es viable
-            assert partida.paises_l[pais_origen].propietario == player, "El pais origen no pertenece al jugador"
-            assert partida.paises_l[pais_destino].propietario == player, "El pais destino no pertenece al jugador"
-            assert partida.paises_l[pais_origen].nro_ejercitos > nro_ejercitos, "El pais origen no tiene ejercitos"
-
-            # Movemos la tropa indicada
-            partida.paises_l[pais_origen].nro_ejercitos -= nro_ejercitos
-            partida.paises_l[pais_destino].nro_ejercitos += nro_ejercitos
+                # Movemos la tropa indicada
+                partida.paises_l[pais_origen].nro_ejercitos -= nro_ejercitos
+                partida.paises_l[pais_destino].nro_ejercitos += nro_ejercitos
 
             self.log.add_movimiento_ejercitos(partida, player, pais_origen,
                                               pais_destino, nro_ejercitos)
-
-            result = partida.jugadores_l[player].movimiento_tropa(partida)
-
-        # TODO:Incluir registro del la opción de pasar
 
         return partida
 

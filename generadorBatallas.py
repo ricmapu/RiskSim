@@ -69,7 +69,7 @@ def genera_fichero_sim(nombre_fichero, nro_simulaciones=1000, max_atacantes=20, 
         nro_atacantes = randint(2, max_atacantes)
         nro_defensores = randint(1, max_defensores)
         result2 = simula_batalla(nro_atacantes, nro_defensores)
-        file.write(str(nro_atacantes) + ";" + str(nro_defensores) + ";")
+        file.write(str(nro_atacantes) + "," + str(nro_defensores) + ",")
         if result2:
             file.write("1\n")
         else:
@@ -95,6 +95,6 @@ if simula_batalla(atacantes, defensores):
 else:
     print("Gana defensores")
 
-genera_fichero_sim("../datos/risk_battle_train.csv", 800000)
-genera_fichero_sim("../datos/risk_battle_eval.csv", 100000)
-genera_fichero_sim("../datos/risk_battle_test.csv", 100000)
+genera_fichero_sim("../datos/logs_partidas/risk_battle_train.csv", 800000)
+genera_fichero_sim("../datos/logs_partidas/risk_battle_eval.csv", 100000)
+genera_fichero_sim("../datos/logs_partidas/risk_battle_test.csv", 100000)

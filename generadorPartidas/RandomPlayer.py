@@ -7,7 +7,7 @@ import numpy.random as rd
 class CRandomPlayer(Cplayer):
 
     def set_models(self, model):
-        None
+        return
 
     def seleccionar_pais(self, estado_partida):
         # Obtenemos todos los paises no asignados
@@ -26,7 +26,7 @@ class CRandomPlayer(Cplayer):
         return paises_libres[pais]
 
     def reforzar_pais(self, estado_partida):
-        # Obtenemos todos los paises no asignados
+        # Obtenemos todos los paises asignados al jugador
         paises_propietario = list()
         for pais in estado_partida.paises_l.keys():
             if estado_partida.paises_l[pais].propietario is self.propietario:
@@ -59,8 +59,16 @@ class CRandomPlayer(Cplayer):
                         paises_atacables.append([pais, pais_candidato.nombre, ejercitos])
 
         # Elegimos un pais para atacar o pasar
+        if len(paises_atacables) is None:
+            # El pais no puede ser atacado
+            return None
+
         paises_atacables.append(None)
         ataque = rd.randint(0, len(paises_atacables))
+
+        if paises_atacables[ataque] is None:
+            # El jugador decide pasar
+            return [None, None, None]
 
         return paises_atacables[ataque]
 
@@ -79,36 +87,30 @@ class CRandomPlayer(Cplayer):
 
     def movimiento_tropa(self, estado_partida):
         # Buscamos todos los paises con ejercitos de sobra para recolocar
-        paises_candidatos = list()
+        movimientos = []
         for pais in estado_partida.paises_l.keys():
             if (estado_partida.paises_l[pais].propietario is self.propietario) \
                     and (estado_partida.paises_l[pais].nro_ejercitos > 1) \
                     and (len(estado_partida.paises_l[pais].vecino) > 0):
-                paises_candidatos.append(pais)
+                # Para cada pais candidato buscamos todos los vecinos y seleccionamos movimientos
+                pais_origen = pais
 
-        paises_candidatos.append(None)
-        candidato = rd.randint(0, len(paises_candidatos))
+                # Obtenemos todos los vecinos del pais seleccionado
+                paises_vecinos = self._get_vecinos(pais_origen, estado_partida)
+                if len(paises_vecinos) > 0:
+                    # seleccionamos el vecino a mover
+                    paises_vecinos.append(None)
+                    pais_destino = paises_vecinos[rd.randint(0, len(paises_vecinos))]
 
-        if paises_candidatos[candidato] is None:
-            return None
+                    if pais_destino is not None:
+                        if estado_partida.paises_l[pais_origen].nro_ejercitos == 2:
+                            nro_ejerc_refuerzo = 1
+                        else:
+                            nro_ejerc_refuerzo = rd.randint(1, estado_partida.paises_l[pais_origen].nro_ejercitos - 1)
 
-        pais_origen = paises_candidatos[candidato]
+                        movimientos.append((pais_origen, pais_destino, nro_ejerc_refuerzo))
 
-        # Obtenemos todos los vecinos del pais seleccionado
-        paises_vecinos = self._get_vecinos(pais_origen, estado_partida)
-
-        if len(paises_vecinos) == 0:
-            return None
-
-        # seleccionamos el vecino a mover
-        pais_destino = paises_vecinos[rd.randint(0, len(paises_vecinos))]
-
-        if estado_partida.paises_l[pais_origen].nro_ejercitos == 2:
-            nro_ejercitos_refuerzo = 1
-        else:
-            nro_ejercitos_refuerzo = rd.randint(1, estado_partida.paises_l[pais_origen].nro_ejercitos - 1)
-
-        return [pais_origen, pais_destino, nro_ejercitos_refuerzo]
+            return movimientos
 
     def _get_vecinos(self, pais, estado_partida):
         paises_visitados = list()

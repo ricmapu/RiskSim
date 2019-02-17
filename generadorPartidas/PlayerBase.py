@@ -29,4 +29,3 @@ class Cplayer:
 
     def movimiento_tropa(self, estado_partida):
         raise NotImplementedError
-

@@ -12,19 +12,23 @@ import matplotlib.pyplot as plt
 
 
 def load_data(filename, num_paises):
-    xcols = (2, 3, 4, 5, 6, 7, 8, 9, 10)
-    ycols = (11,)
+    xcols = (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
+    ycols = (19,)
 
     xdata_temp = genfromtxt(filename, delimiter=',', skip_header=1, dtype=int, usecols=xcols)
     ydata_temp = genfromtxt(filename, delimiter=',', skip_header=1, dtype=int, usecols=ycols)
 
     # Construcción de la matriz
-    x = np.zeros((xdata_temp.shape[0], 16), dtype=int)
+    jugadores = 3
+
+    x = np.zeros((xdata_temp.shape[0], (num_paises * jugadores) + (num_paises * 2) + 1), dtype=int)
     y = ydata_temp
 
-    seccion_propietario = 0
-    seccion_seleccion = 4
-    jugador = 8
+    seccion_nro_ejercitos = 4
+    seccion_atacantes = 8
+    seccion_defensores = 12
+
+    jugador = 16
 
     for row in range(xdata_temp.shape[0]):
         # Construimos un vector de ordenes para cada jugador, teniendo en cuenta que el que mueve es el primer jugador
@@ -33,15 +37,26 @@ def load_data(filename, num_paises):
         posicion[(xdata_temp[row, jugador] + 1) % 3] = num_paises
         posicion[(xdata_temp[row, jugador] + 2) % 3] = num_paises * 2
 
-        inicio_seleccion = num_paises * 3
-        for pais_seleccionado in range(0, num_paises):
-            # Cargamos si el pais esta seleccionado
-            if xdata_temp[row, seccion_seleccion + pais_seleccionado] == 1:
-                x[row, inicio_seleccion + pais_seleccionado] = 1
+        inicio_atacantes = num_paises * jugadores
+        inicio_defensores = inicio_atacantes + num_paises
+        inicio_pasar_turno = inicio_defensores + num_paises
 
-            # Asignamos el pais al jugador propietario
-            if xdata_temp[row, seccion_propietario + pais_seleccionado] != -1:
-                x[row, posicion[xdata_temp[row, pais_seleccionado]] + pais_seleccionado] = 1
+        jugador_pasa = 1
+        for pais_selec in range(0, num_paises):
+
+            if xdata_temp[row, seccion_atacantes + pais_selec] == 1:
+                x[row, inicio_atacantes + pais_selec] = 1
+                jugador_pasa = 0
+
+            if xdata_temp[row, seccion_defensores + pais_selec] == 1:
+                x[row, inicio_defensores + pais_selec] = 1
+
+            # Cargamos el nro de ejercitos del pais seleccionado al propietario
+            x[row, posicion[xdata_temp[row, pais_selec]] + pais_selec] =\
+                xdata_temp[row, seccion_nro_ejercitos + pais_selec]
+
+        if jugador_pasa == 1:
+            x[row, inicio_pasar_turno] = 1
 
     return [x, y]
 
@@ -82,7 +97,7 @@ def model1(xdata_train2, ydata_train2, xdata_eval2, ydata_eval2, verbose_param=1
 if __name__ == "__main__":
     verbose = 1
 
-    [xdata, ydata] = load_data('../../datos/logs_partidas/risk_ini_partida.csv', 4)
+    [xdata, ydata] = load_data('../../datos/logs_partidas/risk_batalla_partida.csv', 4)
 
     eval_size = test_size = int(xdata.shape[0] * .1)
 
@@ -102,4 +117,4 @@ if __name__ == "__main__":
     print('Test loss:', loss_and_metrics[0])
     print('Test accuracy:', loss_and_metrics[1])
 
-    model.save("../../datos/modelos/estimacion_ini_partida.mod")
+    model.save("../../datos/modelos/estimacion_batalla_partida.mod")

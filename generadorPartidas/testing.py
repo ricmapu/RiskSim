@@ -10,6 +10,10 @@ from generadorPartidas.EstadoPartida import CEstadoPartida
 from generadorPartidas.RandomPlayer import CRandomPlayer
 from generadorPartidas.PlayerDe import PlayerDe
 from generadorPartidas.PlayerDd import PlayerDd
+from generadorPartidas.PlayerId import PlayerId
+from generadorPartidas.PlayerRd import PlayerRd
+from generadorPartidas.PlayerBd import PlayerBd
+from generadorPartidas.PlayerMd import PlayerMd
 from keras.models import load_model
 
 
@@ -55,7 +59,7 @@ class TestCRandomPlayer(unittest.TestCase):
 
         tst_player = CRandomPlayer(1)
 
-        self.assertIsNone(tst_player.ataque(tst_estado_partida))
+        self.assertIsNone(tst_player.ataque(tst_estado_partida)[0])
 
         tst_estado_partida.paises_l['0_0'].propietario = 1
         tst_estado_partida.paises_l['0_0'].nro_ejercitos = 2
@@ -148,7 +152,7 @@ class TestCArbitro(unittest.TestCase):
         rd.seed(1)
 
         arbitro.set_log(tst_log)
-        ganador = arbitro.play(0)
+        arbitro.play(0)
         self.assertTrue(tst_log.flush())
 
     def testCArbitroMultiplePartidas(self):
@@ -164,11 +168,29 @@ class TestCArbitro(unittest.TestCase):
 
         arbitro.set_log(tst_log)
 
-        for partida in range(0, 1000):
+        for partida in range(0, 10):
             arbitro.play(partida)
-            print(partida)
+            if partida % 1000 == 0:
+                print(partida)
 
         self.assertTrue(tst_log.flush())
+
+    def testCArbitroAleatorio(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, CRandomPlayer])
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, Random]:" + str(total_ganadas) + " -> "
+              + str(total_ganadas[3]/sum(total_ganadas)))
 
     def testCArbitroAleatorioVsPlayerDe(self):
         # Comprobamos la creación de 100 partidas
@@ -176,7 +198,7 @@ class TestCArbitro(unittest.TestCase):
 
         rd.seed(1)
         arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDe])
-        for partida in range(0, 10):
+        for partida in range(0, 100):
             jug_ganador = arbitro.play(partida)
             if jug_ganador is None:
                 jug_ganador = 0
@@ -184,18 +206,19 @@ class TestCArbitro(unittest.TestCase):
                 jug_ganador += 1
             total_ganadas[jug_ganador] += 1
 
-        print("Ganadas [tablas, Random, Random, PlayerDe]:" + str(total_ganadas))
+        print("Ganadas [tablas, Random, Random, PlayerDe]:" + str(total_ganadas) + " -> "
+              + str(total_ganadas[3]/sum(total_ganadas)))
 
     def testCArbitroAleatorioVsPlayerDd(self):
         # Comprobamos la creación de 100 partidas
         total_ganadas = [0, 0, 0, 0]
 
-        model = load_model("../../datos/model_keras")
+        model = load_model("../../datos/modelos/estimacion_ataque_defensa.mod")
 
         rd.seed(1)
         arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerDd],
                            atack_models=[None, None, model])
-        for partida in range(0, 10):
+        for partida in range(0, 100):
             jug_ganador = arbitro.play(partida)
             if jug_ganador is None:
                 jug_ganador = 0
@@ -203,7 +226,92 @@ class TestCArbitro(unittest.TestCase):
                 jug_ganador += 1
             total_ganadas[jug_ganador] += 1
 
-        print("Ganadas [tablas, Random, Random, PlayerDd]:" + str(total_ganadas))
+        print("Ganadas [tablas, Random, Random, PlayerDd]:" + str(total_ganadas) + " -> "
+              + str(total_ganadas[3]/sum(total_ganadas)))
+
+    def testCArbitroAleatorioVsPlayerId(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        model = load_model("../../datos/modelos/estimacion_ini_partida.mod")
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerId],
+                           atack_models=[None, None, model])
+
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerId]:" + str(total_ganadas)
+              + " -> " + str(total_ganadas[3]/sum(total_ganadas)))
+
+    def testCArbitroAleatorioVsPlayerRd(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        model = load_model("../../datos/modelos/estimacion_refuerzo_partida.mod")
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[PlayerRd, CRandomPlayer, CRandomPlayer],
+                           atack_models=[model, None, None])
+
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerRd]:" + str(total_ganadas)
+              + " -> " + str(total_ganadas[1]/sum(total_ganadas)))
+
+    def testCArbitroAleatorioVsPlayerBd(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        model = load_model("../../datos/modelos/estimacion_batalla_partida.mod")
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerBd],
+                           atack_models=[None, None, model])
+
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerBd]:" + str(total_ganadas)
+              + " -> " + str(total_ganadas[3]/sum(total_ganadas)))
+
+    def testCArbitroAleatorioVsPlayerMd(self):
+        # Comprobamos la creación de 100 partidas
+        total_ganadas = [0, 0, 0, 0]
+
+        model = load_model("../../datos/modelos/estimacion_movimiento_partida.mod")
+
+        rd.seed(1)
+        arbitro = CArbitro(player_class=[CRandomPlayer, CRandomPlayer, PlayerMd],
+                           atack_models=[None, None, model])
+
+        for partida in range(0, 100):
+            jug_ganador = arbitro.play(partida)
+            if jug_ganador is None:
+                jug_ganador = 0
+            else:
+                jug_ganador += 1
+            total_ganadas[jug_ganador] += 1
+
+        print("Ganadas [tablas, Random, Random, PlayerMd]:" + str(total_ganadas)
+              + " -> " + str(total_ganadas[3]/sum(total_ganadas)))
 
 
 class TestClog(unittest.TestCase):

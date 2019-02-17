@@ -1,6 +1,4 @@
 # Clase que contiene el estado de una partida
-from generadorPartidas.ClasesBasicas import CPais, CContinente
-
 
 class CEstadoPartida:
     def __init__(self, lista_jugadores=list(), turno=0, lista_paises=list(), lista_continentes=list(),

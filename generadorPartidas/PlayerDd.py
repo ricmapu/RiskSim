@@ -2,7 +2,7 @@ from generadorPartidas.RandomPlayer import CRandomPlayer
 import numpy as np
 from operator import itemgetter
 
-# Jugador con Ataque estadístico, el resto de decisiones on aleatorias
+# Jugador con Ataque Deep Learning, el resto de decisiones son aleatorias
 
 
 class PlayerDd(CRandomPlayer):
