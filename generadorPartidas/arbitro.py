@@ -1,5 +1,4 @@
 import generadorPartidas.Mapa as Mapa
-from generadorPartidas.RandomPlayer import CRandomPlayer
 from generadorPartidas.EstadoPartida import CEstadoPartida
 import numpy.random as rd
 from generadorPartidas.generadorLog import Clog
@@ -8,8 +7,7 @@ from copy import deepcopy
 
 
 class CArbitro:
-    def __init__(self, jugadores=3, max_turnos=1000., player_class=[CRandomPlayer, CRandomPlayer, CRandomPlayer],
-                 atack_models=[None, None, None]):
+    def __init__(self, player_class, atack_models, jugadores=3, max_turnos=1000.):
 
         self.paises = {}
         self.continentes = {}
@@ -170,7 +168,7 @@ class CArbitro:
     def __turno_recolocar_ejercitos(self, player, partida):
 
         result = partida.jugadores_l[player].movimiento_tropa(partida)
-        if len(result) == 0 or result[0][0] is None:
+        if len(result) == 0:
             # El jugador no puede mover, pasa turno
             return partida
 
@@ -178,7 +176,10 @@ class CArbitro:
         for movimiento in result:
             (pais_origen, pais_destino, nro_ejercitos) = movimiento
 
-            if pais_origen is not None:
+            if pais_origen is None:
+                # Se guarda el movimiento de pasar
+                self.log.add_movimiento_ejercitos(partida, player, pasar=True)
+            else:
                 assert partida.paises_l[pais_origen].propietario == player, "El pais origen no pertenece al jugador"
                 assert partida.paises_l[pais_destino].propietario == player, "El pais destino no pertenece al jugador"
                 assert partida.paises_l[pais_origen].nro_ejercitos > nro_ejercitos, "El pais origen no tiene ejercitos"
@@ -187,8 +188,7 @@ class CArbitro:
                 partida.paises_l[pais_origen].nro_ejercitos -= nro_ejercitos
                 partida.paises_l[pais_destino].nro_ejercitos += nro_ejercitos
 
-            self.log.add_movimiento_ejercitos(partida, player, pais_origen,
-                                              pais_destino, nro_ejercitos)
+                self.log.add_movimiento_ejercitos(partida, player, pais_origen, pais_destino, nro_ejercitos)
 
         return partida
 

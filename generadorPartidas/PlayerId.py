@@ -52,7 +52,7 @@ class PlayerId(CRandomPlayer):
             pais = 0
         else:
             # obtenemos el que fila tiene la probabilidad mas alta de ganar
-            prob_ganar = self.model.predict(input_vector)
+            prob_ganar = self.model.inicializacion.predict(input_vector)
             pais = np.argmax(prob_ganar, axis=0)
 
         return paises_libres[pais[0]]

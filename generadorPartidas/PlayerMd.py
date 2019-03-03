@@ -1,4 +1,5 @@
 from generadorPartidas.RandomPlayer import CRandomPlayer
+from generadorPartidas.ModelContainer import ModelContainer
 import numpy as np
 from copy import deepcopy
 
@@ -9,7 +10,7 @@ from copy import deepcopy
 class PlayerMd(CRandomPlayer):
     def __init__(self, propietario):
         super().__init__(propietario)
-        self.model = None
+        self.model = ModelContainer
 
     def set_models(self, p_model):
         self.model = p_model
@@ -19,12 +20,11 @@ class PlayerMd(CRandomPlayer):
         # Inicializacion de variables
         num_paises = len(estado_partida.paises_l)
         jugadores = len(estado_partida.jugadores_l)
-        ancho_matriz = (num_paises * jugadores) + (num_paises * 2) + 2
+        ancho_matriz = (num_paises * jugadores) + (num_paises * 2) + 1
 
         inicio_origen = num_paises * jugadores
         inicio_destino = inicio_origen + num_paises
-        inicio_nro_ejercitos = inicio_destino + num_paises
-        inicio_pasar = inicio_nro_ejercitos + 1
+        inicio_pasar = inicio_destino + num_paises
 
         posicion = np.zeros(3, dtype=int)
         posicion[self.propietario] = 0
@@ -67,7 +67,6 @@ class PlayerMd(CRandomPlayer):
 
                         input_vector[fila, inicio_origen + index_origen] = 1
                         input_vector[fila, inicio_destino + index_destino] = 1
-                        input_vector[fila, inicio_nro_ejercitos] = 1
 
                         fila += 1
 
@@ -75,7 +74,7 @@ class PlayerMd(CRandomPlayer):
                     input_vector[-1, inicio_pasar] = 1
 
                     # obtenemos el que fila tiene la probabilidad mas alta de ganar
-                    prob_ganar = self.model.predict(input_vector)
+                    prob_ganar = self.model.movimiento_ejercitos.predict(input_vector)
                     index = np.argmax(prob_ganar, axis=0)[0]
 
                     if index == (len(prob_ganar) - 1):
@@ -83,10 +82,26 @@ class PlayerMd(CRandomPlayer):
                         movimientos.append((None, None, None))
                         return movimientos
                     else:
+                        # Obtenemos el nro de ejercitos a mover, a partir de la opcion escogida
+                        input_nro_eje = input_vector[1, 0:20]
+
+                        input_nro_eje = np.reshape(input_nro_eje, (1, 20))
+
+                        num_ejercitos = self.model.movimiento_num_ejercitos.predict(input_nro_eje)
+
+                        num_ejercitos = round(num_ejercitos[0, 0])
+
+                        # Hay que comprobar que el nro de ejercitos no sea mayor que el max a mover o 0
+                        if num_ejercitos == 0:
+                            num_ejercitos = 1
+
+                        if num_ejercitos > (paises_temp[pais].nro_ejercitos - 1):
+                            num_ejercitos = paises_temp[pais].nro_ejercitos - 1
+
                         movimientos.append((pais, paises_vecinos[index], 1))
                         # ajustamos el nro de ejercitos para la proxima iteracion
-                        paises_temp[pais].nro_ejercitos -= 1
-                        paises_temp[paises_vecinos[index]].nro_ejercitos += 1
+                        paises_temp[pais].nro_ejercitos -= num_ejercitos
+                        paises_temp[paises_vecinos[index]].nro_ejercitos += num_ejercitos
 
         return movimientos
 

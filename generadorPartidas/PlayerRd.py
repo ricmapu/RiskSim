@@ -50,7 +50,7 @@ class PlayerRd(CRandomPlayer):
             nro_pais += 1
 
         # obtenemos el que fila tiene la probabilidad mas alta de ganar
-        prob_ganar = self.model.predict(input_vector)
+        prob_ganar = self.model.refuerzo.predict(input_vector)
         pais = np.argmax(prob_ganar, axis=0)[0]
 
         return paises_propietario[pais]

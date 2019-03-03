@@ -6,6 +6,11 @@ import numpy.random as rd
 
 class CRandomPlayer(Cplayer):
 
+    # def __deepcopy__(self, memo):
+    #     newItem = CRandomPlayer(self.propietario)
+    #
+    #     return newItem
+
     def set_models(self, model):
         return
 
@@ -102,7 +107,11 @@ class CRandomPlayer(Cplayer):
                     paises_vecinos.append(None)
                     pais_destino = paises_vecinos[rd.randint(0, len(paises_vecinos))]
 
-                    if pais_destino is not None:
+                    if pais_destino is None:
+                        # El jugador pasa
+                        movimientos.append((None, None, None))
+                        return movimientos
+                    else:
                         if estado_partida.paises_l[pais_origen].nro_ejercitos == 2:
                             nro_ejerc_refuerzo = 1
                         else:
@@ -110,7 +119,7 @@ class CRandomPlayer(Cplayer):
 
                         movimientos.append((pais_origen, pais_destino, nro_ejerc_refuerzo))
 
-            return movimientos
+        return movimientos
 
     def _get_vecinos(self, pais, estado_partida):
         paises_visitados = list()
@@ -128,7 +137,7 @@ class CRandomPlayer(Cplayer):
 
         paises_visitados.append(pais)
         for pais_vecino in estado_partida.paises_l[pais].vecino:
-            # Solo visitamos pais
+            # Solo visitamos paises que pertenecen al mismo jugador
             if estado_partida.paises_l[pais].propietario != estado_partida.paises_l[pais_vecino].propietario:
                 continue
 

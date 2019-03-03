@@ -21,7 +21,7 @@ def load_data(filename, num_paises):
     # Construcción de la matriz
     jugadores = 3
 
-    x = np.zeros((xdata_temp.shape[0], (num_paises * jugadores) + (num_paises * 2) + 2), dtype=int)
+    x = np.zeros((xdata_temp.shape[0], (num_paises * jugadores) + (num_paises * 2) + 1), dtype=int)
     y = ydata_temp
 
     seccion_nro_ejercitos = 4
@@ -40,9 +40,8 @@ def load_data(filename, num_paises):
 
         inicio_origen = num_paises * jugadores
         inicio_destino = inicio_origen + num_paises
-        inicio_nro_ejercitos = inicio_destino + num_paises
 
-        inicio_pasar_turno = inicio_nro_ejercitos + 1
+        inicio_pasar_turno = inicio_destino + num_paises
 
         jugador_pasa = 1
         for pais_selec in range(0, num_paises):
@@ -60,8 +59,6 @@ def load_data(filename, num_paises):
 
         if jugador_pasa == 1:
             x[row, inicio_pasar_turno] = 1
-        else:
-            x[row, inicio_nro_ejercitos] = xdata_temp[row, seccion_movimiento]
 
     return [x, y]
 

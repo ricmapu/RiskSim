@@ -31,7 +31,7 @@ class PlayerDd(CRandomPlayer):
                         ejercitos_defensores = estado_partida.paises_l[pais_candidato.nombre].nro_ejercitos
 
                         x = np.array([[ejercitos_atacantes, ejercitos_defensores]])
-                        prob_ganar = self.model.predict(x)
+                        prob_ganar = self.model.ataque.predict(x)
 
                         # incluimos el atacante, el atacado y el nro de ejercitos a usar en la lista, asociado a la
                         # probabilidad de ganar
@@ -60,7 +60,7 @@ class PlayerDd(CRandomPlayer):
 
             assert self.model is not None, "Modelo nulo en PlayerDd"
 
-            result = self.model.predict(x)
+            result = self.model.ataque.predict(x)
             if (1-result[0]) > (1-result[1]):
                 defensores = 1
             else:
